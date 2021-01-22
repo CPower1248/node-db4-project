@@ -1,24 +1,37 @@
 exports.up = function(knex) {
   return knex.schema
     .createTable("recipes", tbl => {
-      tbl.increments("recipe_id")
+      tbl.increments()
       tbl.string("recipe_name", 128).notNullable()
     })
     .createTable("ingredients", tbl => {
-      tbl.increments("ingredients_id")
+      tbl.increments()
+      tbl.string("ingredient_name", 128).notNullable().unique()
     })
-    .createTable("shoppingList", tbl => {
-      tbl.increments("shopping_list_id")
+    .createTable("recipes_ingredients", tbl => {
+      tbl.increments()
+      tbl.integer("ingredient_id").notNullable().unique().unsigned()
+        .references("id").inTable("ingredients")
+        .onDelete("CASCADE")
+      tbl.integer("recipe_id").notNullable().unsigned()
+        .references("id").inTable("recipies")
+        .onDelete("CASCADE")
     })
     .createTable("instructions", tbl => {
-      tbl.increments("instruction_id")
+      tbl.increments()
+      tbl.integer("recipes_ingredients_id").unsigned()
+        .references("id").inTable("recipies_ingredients")
+        .onDelete("RESTRICT")
+      tbl.integer("quantity")
+      tbl.integer("step").notNullable()
+      tbl.string("text").notNullable()
     })
 };
 
 exports.down = function(knex) {
   return knex.schema
     .dropTableIfExists("instructions")
-    .dropTableIfExists("shopping-list")
+    .dropTableIfExists("recipies_ingredients")
     .dropTableIfExists("ingredients")
     .dropTableIfExists("recipes")
 };
